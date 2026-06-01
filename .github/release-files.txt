@@ -2,3 +2,6 @@
 # One path per line, relative to the repository root.
 
 micromount.elf
+config.ini.example
+README.md
+LICENSE

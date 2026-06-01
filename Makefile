@@ -6,9 +6,15 @@ VERSION_TAG := $(shell git describe --abbrev=6 --dirty --always --tags 2>/dev/nu
 CFLAGS := -O3 -flto=thin -DNDEBUG -ffunction-sections -fdata-sections -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Werror=strict-prototypes -Werror=missing-prototypes -D_BSD_SOURCE -std=gnu11 -Iinclude -Isrc
 CFLAGS += -DMICROMOUNT_VERSION=\"$(VERSION_TAG)\"
 LDFLAGS := -flto=thin -Wl,--gc-sections
-LIBS :=
+LIBS := -lSceNotification -lSceUserService
 
-SRCS := src/main.c
+SRCS := src/main.c \
+	src/mm_config.c \
+	src/mm_log.c \
+	src/mm_mount.c \
+	src/mm_scan.c \
+	src/mm_sha256.c \
+	src/mm_util.c
 OBJS := $(SRCS:.c=.o)
 HEADERS := $(wildcard include/*.h)
 TARGET := micromount.elf
