@@ -1,0 +1,47 @@
+# MicroMount runtime config example
+# Place as: /data/micromount/config.ini
+#
+# Uncomment only the values you want to override.
+
+# Base directory where MicroMount creates managed mount folders.
+# Resulting mount folders look like:
+#   /data/homebrew/micromount-PPSA12345-1a2b3c4d
+# target_directory=/data/homebrew
+
+# Enable debug popups for important per-image events such as detection and mount.
+# Logs are always written to /data/micromount/debug.log regardless of this flag.
+# debug=1
+
+# Scan depth relative to each scan root.
+# 0 scans only the root itself, 1 also scans one nested directory level.
+# scan_depth=1
+
+# Full scan interval in seconds.
+# scan_interval_seconds=15
+
+# Default scan roots copied from ShadowMountPlus are used automatically.
+# To override them, add one or more scanpath entries or a scan_paths list.
+#
+# scanpath=/data/homebrew
+# scanpath=/data/etaHEN/games
+# scan_paths=/mnt/usb0/homebrew;/mnt/usb0/etaHEN/games
+
+# LVD mount profile.
+# Defaults match the safest requested family:
+#   {0, 65536, true, 0x9, "pfs", "AC", "system", true, false}
+#
+# lvd_image_type=0
+# lvd_sector_size=65536
+# lvd_secondary_unit=65536
+# lvd_raw_flags=0x9
+
+# PFS mount profile.
+# pfs_fstype=pfs
+# pfs_mkeymode=AC
+# pfs_budgetid=system
+# pfs_sigverify=0
+# pfs_playgo=0
+# pfs_disc=0
+# pfs_use_ekpfs=1
+# pfs_read_only=1
+# pfs_force=0
