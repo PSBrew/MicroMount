@@ -19,6 +19,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      archive_name: ${{ steps.package.outputs.archive_name }}
     steps:
       - name: Checkout Payload
         uses: actions/checkout@v5
