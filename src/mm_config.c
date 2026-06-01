@@ -7,6 +7,9 @@
 static const char *const k_default_scan_paths[] =
     MM_DEFAULT_SCAN_PATHS_INITIALIZER;
 
+extern unsigned char config_ini_example[];
+extern unsigned int config_ini_example_len;
+
 static bool mm_config_add_scan_path(mm_config_t *config, const char *path) {
   size_t index;
 
@@ -53,7 +56,7 @@ static void mm_config_apply_defaults(mm_config_t *config) {
   (void)mm_copy_string(config->target_directory,
                        sizeof(config->target_directory), "/data/homebrew");
   config->scan_depth = 1u;
-  config->scan_interval_seconds = 15u;
+  config->scan_interval_seconds = 30u;
   config->debug_enabled = true;
 
   config->mount_profile.lvd_image_type = 0u;
@@ -313,6 +316,52 @@ static bool mm_config_parse_file(mm_config_t *config) {
   return true;
 }
 
+static bool mm_config_write_example_file(void) {
+  FILE *fp;
+  size_t written;
+
+  fp = fopen(MM_CONFIG_FILE, "wb");
+  if (!fp) {
+    mm_log_warn("CFG", "failed to create %s: %s", MM_CONFIG_FILE,
+                strerror(errno));
+    return false;
+  }
+
+  written = fwrite(config_ini_example, 1, config_ini_example_len, fp);
+  if (written != (size_t)config_ini_example_len) {
+    mm_log_warn("CFG", "failed to write %s", MM_CONFIG_FILE);
+    fclose(fp);
+    (void)unlink(MM_CONFIG_FILE);
+    return false;
+  }
+
+  if (fclose(fp) != 0) {
+    mm_log_warn("CFG", "failed to finalize %s: %s", MM_CONFIG_FILE,
+                strerror(errno));
+    (void)unlink(MM_CONFIG_FILE);
+    return false;
+  }
+
+  mm_log_info("CFG", "created default config from embedded template: %s",
+              MM_CONFIG_FILE);
+  return true;
+}
+
+static void mm_config_create_if_missing(void) {
+  struct stat st;
+
+  if (stat(MM_CONFIG_FILE, &st) == 0)
+    return;
+
+  if (errno != ENOENT) {
+    mm_log_warn("CFG", "failed to stat %s: %s", MM_CONFIG_FILE,
+                strerror(errno));
+    return;
+  }
+
+  (void)mm_config_write_example_file();
+}
+
 void mm_config_init_defaults(mm_config_t *config) {
   if (!config)
     return;
@@ -329,6 +378,8 @@ bool mm_config_load(mm_config_t *config) {
   if (!mm_ensure_dir_recursive(MM_ROOT_DIR)) {
     mm_log_warn("CFG", "failed to create %s: %s", MM_ROOT_DIR, strerror(errno));
   }
+
+  mm_config_create_if_missing();
 
   config->config_file_present = (stat(MM_CONFIG_FILE, &st) == 0);
   if (config->config_file_present)

@@ -8,3 +8,5 @@ docs/*
 .idea/
 .vscode/
 legacy
+/src/icon_asset.c
+/src/config_ini_example_asset.c

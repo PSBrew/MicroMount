@@ -7,6 +7,16 @@
 
 static FILE *g_log_file = NULL;
 static bool g_debug_enabled = true;
+static bool g_log_initialized = false;
+static bool g_notification_icon_checked = false;
+static bool g_notification_icon_ready = false;
+
+#define MM_LOG_FILE_1 MM_LOG_FILE ".1"
+#define MM_LOG_FILE_2 MM_LOG_FILE ".2"
+#define MM_LOG_FILE_3 MM_LOG_FILE ".3"
+
+extern unsigned char icon_png[];
+extern unsigned int icon_png_len;
 
 static FILE *mm_ensure_log_file_open(void) {
   if (g_log_file)
@@ -15,6 +25,26 @@ static FILE *mm_ensure_log_file_open(void) {
   (void)mm_ensure_dir_recursive(MM_ROOT_DIR);
   g_log_file = fopen(MM_LOG_FILE, "a");
   return g_log_file;
+}
+
+static void mm_rotate_file_if_present(const char *from, const char *to) {
+  if (rename(from, to) != 0 && errno != ENOENT) {
+    fprintf(stdout, "[WARN] [LOG] failed to rotate %s to %s: %s\n", from, to,
+            strerror(errno));
+    fflush(stdout);
+  }
+}
+
+static void mm_rotate_log_files(void) {
+  if (unlink(MM_LOG_FILE_3) != 0 && errno != ENOENT) {
+    fprintf(stdout, "[WARN] [LOG] failed to remove %s: %s\n", MM_LOG_FILE_3,
+            strerror(errno));
+    fflush(stdout);
+  }
+
+  mm_rotate_file_if_present(MM_LOG_FILE_2, MM_LOG_FILE_3);
+  mm_rotate_file_if_present(MM_LOG_FILE_1, MM_LOG_FILE_2);
+  mm_rotate_file_if_present(MM_LOG_FILE, MM_LOG_FILE_1);
 }
 
 static void mm_build_timestamp(char out[32]) {
@@ -99,7 +129,9 @@ static void mm_log_emit_v(const char *level, const char *subsystem,
   fputc('\n', stdout);
   fflush(stdout);
 
-  fp = mm_ensure_log_file_open();
+  fp = NULL;
+  if (g_log_initialized)
+    fp = mm_ensure_log_file_open();
   if (fp) {
     fprintf(fp, "[%s] [%s] [%s] ", timestamp, level, subsystem);
     vfprintf(fp, fmt, file_args);
@@ -127,6 +159,52 @@ static void mm_notify_plain_message(const char *message) {
   (void)sceKernelSendNotificationRequest(0, &request, sizeof(request), 0);
 }
 
+static bool mm_ensure_notification_icon_present(void) {
+  struct stat st;
+  FILE *fp;
+  size_t written;
+  int saved_errno = 0;
+
+  if (stat(MM_NOTIFY_ICON_FILE, &st) == 0 && st.st_size > 0)
+    return true;
+
+  (void)mkdir("/user/data", 0777);
+  (void)mkdir(MM_NOTIFY_ICON_DIR, 0777);
+
+  fp = fopen(MM_NOTIFY_ICON_FILE, "wb");
+  if (!fp)
+    return false;
+
+  written = fwrite(icon_png, 1, icon_png_len, fp);
+  if (written != (size_t)icon_png_len)
+    saved_errno = ferror(fp) ? errno : EIO;
+  if (fflush(fp) != 0 && saved_errno == 0)
+    saved_errno = errno;
+  if (fclose(fp) != 0 && saved_errno == 0)
+    saved_errno = errno;
+
+  if (saved_errno != 0) {
+    errno = saved_errno;
+    (void)unlink(MM_NOTIFY_ICON_FILE);
+    return false;
+  }
+
+  return true;
+}
+
+static bool mm_notifications_init(void) {
+  if (!g_notification_icon_checked) {
+    g_notification_icon_ready = mm_ensure_notification_icon_present();
+    g_notification_icon_checked = true;
+    if (!g_notification_icon_ready) {
+      mm_log_emit("WARN", "NOTIFY", "failed to prepare icon at %s: %s",
+                  MM_NOTIFY_ICON_FILE, strerror(errno));
+    }
+  }
+
+  return g_notification_icon_ready;
+}
+
 static bool mm_notify_rich_message(const char *message) {
   char payload[8192];
   char created_at[32];
@@ -136,6 +214,8 @@ static bool mm_notify_rich_message(const char *message) {
   int written;
 
   if (!message || message[0] == '\0')
+    return false;
+  if (!mm_notifications_init())
     return false;
   if (!mm_build_notification_timestamp(created_at))
     return false;
@@ -161,7 +241,8 @@ static bool mm_notify_rich_message(const char *message) {
       "\"isImmediate\":true,"
       "\"priority\":100,"
       "\"viewData\":{"
-      "\"icon\":{\"type\":\"Predefined\",\"parameters\":{\"icon\":\"community\"}},"
+      "\"icon\":{\"type\":\"Url\",\"parameters\":{\"url\":\"" MM_NOTIFY_ICON_FILE
+      "\"}},"
       "\"message\":{\"body\":\"%s\"},"
       "\"subMessage\":{\"body\":\"MicroMount %s\"}"
       "}"
@@ -191,6 +272,13 @@ static void mm_notify_v(bool allow_when_debug_disabled, const char *fmt,
 
 void mm_log_init(bool debug_enabled) {
   g_debug_enabled = debug_enabled;
+  if (g_log_file) {
+    fclose(g_log_file);
+    g_log_file = NULL;
+  }
+  g_log_initialized = true;
+  (void)mm_ensure_dir_recursive(MM_ROOT_DIR);
+  mm_rotate_log_files();
   (void)mm_ensure_log_file_open();
 }
 
@@ -199,6 +287,7 @@ void mm_log_shutdown(void) {
     fclose(g_log_file);
     g_log_file = NULL;
   }
+  g_log_initialized = false;
 }
 
 void mm_log_set_debug_enabled(bool enabled) {

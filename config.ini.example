@@ -17,7 +17,7 @@
 # scan_depth=1
 
 # Full scan interval in seconds.
-# scan_interval_seconds=15
+# scan_interval_seconds=30
 
 # Default scan roots copied from ShadowMountPlus are used automatically.
 # To override them, add one or more scanpath entries or a scan_paths list.

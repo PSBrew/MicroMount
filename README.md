@@ -19,7 +19,7 @@ MicroMount runtime behavior:
 - Cleans stale managed mounts before each reconcile pass.
 - Skips images that are already correctly mounted.
 - Writes logs to `/data/micromount/debug.log` on every run.
-- Reads config from `/data/micromount/config.ini` (defaults are used when missing).
+- Reads config from `/data/micromount/config.ini` (auto-created from template when missing).
 
 ## 💖 Sponsorship
 
@@ -58,7 +58,7 @@ mkpfs pack file --compress --verify ./GAME1234.exfat ./GAME1234.ffpfsc
 
 ## ⚙️ How it works
 
-1. MicroMount starts, loads defaults, then loads `/data/micromount/config.ini` if present.
+1. MicroMount starts, loads defaults, creates `/data/micromount/config.ini` from the embedded template when missing, then loads it.
 2. It scans `scan_paths` recursively up to `scan_depth` for `.ffpfsc`.
 3. For each candidate image, it builds:
    - `GAMEID` from filename (PlayStation-style `AAAA0000` or `AAAA00000` when found).
@@ -78,6 +78,7 @@ mkpfs pack file --compress --verify ./GAME1234.exfat ./GAME1234.ffpfsc
 ## 🛠️ Configuration
 
 Use `config.ini.example` as the template for `/data/micromount/config.ini`.
+If `/data/micromount/config.ini` does not exist at runtime, MicroMount automatically creates it from the embedded `config.ini.example`.
 
 Core keys:
 
@@ -85,7 +86,7 @@ Core keys:
 - `scanpath` (repeatable)
 - `scan_paths` (comma/semicolon-separated list)
 - `scan_depth` (default: `1`)
-- `scan_interval_seconds` (default: `15`)
+- `scan_interval_seconds` (default: `30`)
 - `debug` (default: `1`)
 
 Mount profile keys:
