@@ -8,13 +8,16 @@ CFLAGS += -DMICROMOUNT_VERSION=\"$(VERSION_TAG)\"
 LDFLAGS := -flto=thin -Wl,--gc-sections
 LIBS := -lSceNotification -lSceUserService
 
+ASSET_SRCS := src/icon_asset.c \
+	src/config_ini_example_asset.c
 SRCS := src/main.c \
 	src/mm_config.c \
 	src/mm_log.c \
 	src/mm_mount.c \
 	src/mm_scan.c \
 	src/mm_sha256.c \
-	src/mm_util.c
+	src/mm_util.c \
+	$(ASSET_SRCS)
 OBJS := $(SRCS:.c=.o)
 HEADERS := $(wildcard include/*.h)
 TARGET := micromount.elf
@@ -28,5 +31,11 @@ $(TARGET): $(OBJS)
 src/%.o: src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+src/icon_asset.c: assets/icon.png
+	xxd -i $< > $@
+
+src/config_ini_example_asset.c: config.ini.example
+	xxd -i $< > $@
+
 clean:
-	rm -f $(TARGET) src/*.o
+	rm -f $(TARGET) src/*.o src/icon_asset.c src/config_ini_example_asset.c

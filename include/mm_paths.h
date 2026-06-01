@@ -5,6 +5,8 @@
 #define MM_CONFIG_FILE MM_ROOT_DIR "/config.ini"
 #define MM_LOG_FILE MM_ROOT_DIR "/debug.log"
 #define MM_MANAGED_PREFIX "micromount-"
+#define MM_NOTIFY_ICON_DIR "/user/data/micromount"
+#define MM_NOTIFY_ICON_FILE MM_NOTIFY_ICON_DIR "/icon.png"
 
 #define MM_DEFAULT_SCAN_PATHS_INITIALIZER                                     \
   {                                                                           \

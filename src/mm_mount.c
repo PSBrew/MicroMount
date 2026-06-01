@@ -2,6 +2,7 @@
 
 #include "mm_log.h"
 #include "mm_paths.h"
+#include "mm_runtime.h"
 #include "mm_util.h"
 
 #define MM_LVD_CTRL_PATH "/dev/lvdctl"
@@ -57,6 +58,8 @@ typedef struct {
   size_t capacity;
 } mm_managed_mount_list_t;
 
+static void mm_lvd_detach(int unit_id);
+
 static uint16_t mm_normalize_raw_flags(uint16_t raw_flags) {
   switch (raw_flags) {
   case 0x8:
@@ -90,6 +93,8 @@ static bool mm_wait_for_dev_node(const char *devname, bool should_exist) {
   for (retry = 0; retry < MM_LVD_NODE_WAIT_RETRIES; ++retry) {
     struct stat st;
     bool exists = (stat(devname, &st) == 0);
+    if (mm_should_stop())
+      return false;
     if (exists == should_exist)
       return true;
     (void)sceKernelUsleep(MM_LVD_NODE_WAIT_US);
@@ -152,6 +157,7 @@ static int mm_lvd_attach(const char *image_path, off_t image_size,
   }
 
   if (!mm_wait_for_dev_node(devname_out, true)) {
+    mm_lvd_detach(unit_id);
     mm_log_error("MOUNT", "device node did not appear: %s", devname_out);
     return -1;
   }
@@ -333,6 +339,12 @@ static bool mm_collect_managed_mounts(const mm_config_t *config,
     struct stat st;
     mm_managed_mount_t item;
 
+    if (mm_should_stop()) {
+      closedir(dir);
+      mm_managed_mount_list_free(list);
+      return false;
+    }
+
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
       continue;
     if (strncmp(entry->d_name, MM_MANAGED_PREFIX,
@@ -413,6 +425,9 @@ static bool mm_mount_candidate(const mm_config_t *config,
   char errmsg[256];
   int unit_id;
 
+  if (mm_should_stop())
+    return false;
+
   if (stat(candidate->source_path, &st) != 0) {
     mm_log_error("MOUNT", "source missing before mount %s: %s",
                  candidate->source_path, strerror(errno));
@@ -435,6 +450,11 @@ static bool mm_mount_candidate(const mm_config_t *config,
                           &config->mount_profile, devname, sizeof(devname));
   if (unit_id < 0) {
     mm_log_error("MOUNT", "LVD attach failed for %s", candidate->source_path);
+    return false;
+  }
+
+  if (mm_should_stop()) {
+    mm_lvd_detach(unit_id);
     return false;
   }
 
@@ -479,6 +499,8 @@ void mm_cleanup_managed_mounts(const mm_config_t *config,
     *errors_out = 0;
 
   if (!mm_collect_managed_mounts(config, &list)) {
+    if (mm_should_stop())
+      return;
     if (errors_out)
       (*errors_out)++;
     return;
@@ -489,6 +511,9 @@ void mm_cleanup_managed_mounts(const mm_config_t *config,
     bool desired = mm_candidate_mount_path_exists(candidates, item->path);
     bool should_cleanup =
         (!desired) || item->empty || (desired && item->mounted && item->empty);
+
+    if (mm_should_stop())
+      break;
 
     if (!should_cleanup)
       continue;
@@ -523,6 +548,9 @@ void mm_reconcile_mounts(const mm_config_t *config,
     bool mounted = false;
     bool empty = true;
     struct stat st;
+
+    if (mm_should_stop())
+      break;
 
     (void)mm_lookup_mount_info(candidate->mount_path, &mounted, NULL);
     if (mounted) {
@@ -567,7 +595,7 @@ void mm_reconcile_mounts(const mm_config_t *config,
     if (mm_mount_candidate(config, candidate)) {
       if (mounted_out)
         (*mounted_out)++;
-    } else if (errors_out) {
+    } else if (!mm_should_stop() && errors_out) {
       (*errors_out)++;
     }
   }

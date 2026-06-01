@@ -2,6 +2,7 @@
 
 #include "mm_log.h"
 #include "mm_paths.h"
+#include "mm_runtime.h"
 #include "mm_sha256.h"
 #include "mm_util.h"
 
@@ -130,6 +131,9 @@ static bool mm_scan_directory(const mm_config_t *config,
   DIR *dir;
   struct dirent *entry;
 
+  if (mm_should_stop())
+    return false;
+
   dir = opendir(current_path);
   if (!dir) {
     if (errno != ENOENT)
@@ -141,6 +145,11 @@ static bool mm_scan_directory(const mm_config_t *config,
   while ((entry = readdir(dir)) != NULL) {
     char full_path[PATH_MAX];
     struct stat st;
+
+    if (mm_should_stop()) {
+      closedir(dir);
+      return false;
+    }
 
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
       continue;
@@ -225,9 +234,13 @@ bool mm_scan_for_images(const mm_config_t *config, mm_candidate_list_t *list) {
   mm_candidate_list_init(list);
 
   for (index = 0; index < config->scan_path_count; ++index) {
+    if (mm_should_stop())
+      return false;
     mm_log_debug("SCAN", "walking root=%s depth=%u", config->scan_paths[index],
                  config->scan_depth);
     if (!mm_scan_directory(config, config->scan_paths[index], 0u, list)) {
+      if (mm_should_stop())
+        return false;
       success = false;
     }
   }
