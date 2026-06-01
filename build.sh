@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build dist/micromount.elf locally using Docker.
+# Build micromount.elf locally using Docker.
 # Usage:
 #  ./build.sh
 # Usage with cache disabled:
@@ -34,7 +34,7 @@ log() {
 
 usage() {
   cat <<'EOF'
-Build dist/micromount.elf locally using Docker.
+Build micromount.elf locally using Docker.
 
 Usage:
   ./build.sh
@@ -123,10 +123,10 @@ docker run --rm \
   "$RUNTIME_IMAGE" \
   /bin/bash -lc "$BUILD_CMD"
 
-if [[ ! -f "$ROOT_DIR/dist/micromount.elf" ]]; then
-  log "Build did not produce dist/micromount.elf"
+if [[ ! -f "$ROOT_DIR/micromount.elf" ]]; then
+  log "Build did not produce micromount.elf"
   exit 1
 fi
 
 log "Done."
-log "Artifact: $ROOT_DIR/dist/micromount.elf"
+log "Artifact: $ROOT_DIR/micromount.elf"

@@ -1,4 +1,4 @@
 # Files included in the release archive.
 # One path per line, relative to the repository root.
 
-dist/micromount.elf
+micromount.elf

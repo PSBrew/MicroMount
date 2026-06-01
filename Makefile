@@ -11,15 +11,11 @@ LIBS :=
 SRCS := src/main.c
 OBJS := $(SRCS:.c=.o)
 HEADERS := $(wildcard include/*.h)
-DIST_DIR := dist
-TARGET := $(DIST_DIR)/micromount.elf
+TARGET := micromount.elf
 
 all: $(TARGET)
 
-$(DIST_DIR):
-	mkdir -p $(DIST_DIR)
-
-$(TARGET): $(OBJS) | $(DIST_DIR)
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 	$(PS5_PAYLOAD_SDK)/bin/prospero-strip --strip-all $@
 
