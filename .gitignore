@@ -1,0 +1,11 @@
+*.o
+*.elf
+daemon.lock
+debug.log
+notify.txt
+refs/*
+docs/*
+.idea/
+.vscode/
+dist/*
+!/dist/.gitkeep
