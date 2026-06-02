@@ -54,7 +54,7 @@ static void mm_config_set_default_scan_paths(mm_config_t *config) {
 static void mm_config_apply_defaults(mm_config_t *config) {
   memset(config, 0, sizeof(*config));
   (void)mm_copy_string(config->target_directory,
-                       sizeof(config->target_directory), "/mnt/shadowmnt");
+                       sizeof(config->target_directory), "/data/homebrew");
   config->scan_depth = 1u;
   config->scan_interval_seconds = 15u;
   config->debug_enabled = true;

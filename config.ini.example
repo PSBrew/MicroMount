@@ -5,8 +5,8 @@
 
 # Base directory where MicroMount creates managed mount folders.
 # Resulting mount folders look like:
-#   /mnt/shadowmnt/micromount-PPSA12345-1a2b3c4d
-# target_directory=/mnt/shadowmnt
+#   /data/homebrew/micromount-PPSA12345-1a2b3c4d
+# target_directory=/data/homebrew
 
 # Enable debug popups for important per-image events such as detection and mount.
 # Logs are always written to /data/micromount/debug.log regardless of this flag.
