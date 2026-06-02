@@ -128,19 +128,16 @@ jobs:
           tag_name: ${{ github.ref_name }}
           body: |
             ## 🚀 Quick Start
-
+            
             1. Ensure your ShadowMountPlus `scan_depth=2` is set to `2`. Without it, games will not be recognized.
             2. Convert your `.exfat` or `.ffpkg` games into `.ffpfsc` format using the `mkpfs` tool.
+            
+                ```bash
+                pip install -U mkpfs
+                mkpfs pack file --compress --verify ./GAME1234.exfat ./GAME1234.ffpfsc
+                ```
+            
+            4. Ensure the new `.ffpfsc` files are uploaded to the PS5, in one of the monitored folders like `/data/homebrew`.
+            5. Send or activate the `micromount.elf` payload.
 
-            ```bash
-            # Install using pip
-            pip install mkpfs
-
-            # Convert an .exfat or .ffpkg file into a PFSC compressed image .ffpfsc
-            # NOTE: .ffpfsc is the simplest way to have game-file compression support.
-            mkpfs pack file --compress --verify ./GAME1234.exfat ./GAME1234.ffpfsc
-            ```
-
-            3. Ensure the new `.ffpfsc` files are uploaded to the PS5, in one of the monitored folders like `/data/homebrew`.
-            4. Send or activate the `micromount.elf` payload.
           files: dist/${{ needs.build.outputs.archive_name }}
