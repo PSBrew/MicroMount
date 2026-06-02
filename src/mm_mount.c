@@ -392,6 +392,28 @@ static bool mm_candidate_mount_path_exists(const mm_candidate_list_t *candidates
   return false;
 }
 
+static bool mm_ensure_parent_directories(const char *path) {
+  char parent[PATH_MAX];
+  char *slash;
+
+  if (!path || path[0] == '\0')
+    return false;
+
+  if (!mm_copy_string(parent, sizeof(parent), path))
+    return false;
+
+  slash = strrchr(parent, '/');
+  if (!slash)
+    return true;
+
+  if (slash == parent)
+    slash[1] = '\0';
+  else
+    *slash = '\0';
+
+  return mm_ensure_dir_recursive(parent);
+}
+
 static bool mm_cleanup_mount_path(const mm_managed_mount_t *item) {
   bool empty_after = false;
 
@@ -436,6 +458,12 @@ static bool mm_mount_candidate(const mm_config_t *config,
   if (st.st_size <= 0) {
     mm_log_error("MOUNT", "source has invalid size %lld: %s",
                  (long long)st.st_size, candidate->source_path);
+    return false;
+  }
+
+  if (!mm_ensure_parent_directories(candidate->mount_path)) {
+    mm_log_error("MOUNT", "failed to create parent directories for %s: %s",
+                 candidate->mount_path, strerror(errno));
     return false;
   }
 
