@@ -209,10 +209,8 @@ static void mm_run_cycle(mm_config_t *config, bool first_cycle,
   if (first_cycle || summary.mounted > 0 || summary.cleaned > 0 ||
       summary.errors > 0 || summary.total_mounted != *last_notified_total) {
     mm_notify_summary(
-        "MicroMount synchronized.\nMounted: %zu\nNew: %zu  Skipped: %zu  "
-        "Cleaned: %zu  Errors: %zu",
-        summary.total_mounted, summary.mounted, summary.skipped,
-        summary.cleaned, summary.errors);
+        "Library Ready.\nFound %zu games.",
+        summary.total_mounted);
     *last_notified_total = summary.total_mounted;
   }
 
