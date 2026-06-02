@@ -56,7 +56,7 @@ static void mm_config_apply_defaults(mm_config_t *config) {
   (void)mm_copy_string(config->target_directory,
                        sizeof(config->target_directory), "/data/homebrew");
   config->scan_depth = 1u;
-  config->scan_interval_seconds = 30u;
+  config->scan_interval_seconds = 15u;
   config->debug_enabled = true;
 
   config->mount_profile.lvd_image_type = 0u;

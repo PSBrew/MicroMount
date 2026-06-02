@@ -86,7 +86,7 @@ Core keys:
 - `scanpath` (repeatable)
 - `scan_paths` (comma/semicolon-separated list)
 - `scan_depth` (default: `1`)
-- `scan_interval_seconds` (default: `30`)
+- `scan_interval_seconds` (default: `15`)
 - `debug` (default: `1`)
 
 Mount profile keys:
