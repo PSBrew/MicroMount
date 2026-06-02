@@ -54,7 +54,7 @@ static void mm_config_set_default_scan_paths(mm_config_t *config) {
 static void mm_config_apply_defaults(mm_config_t *config) {
   memset(config, 0, sizeof(*config));
   (void)mm_copy_string(config->target_directory,
-                       sizeof(config->target_directory), "/data/homebrew");
+                       sizeof(config->target_directory), "/mnt/shadowmnt");
   config->scan_depth = 1u;
   config->scan_interval_seconds = 15u;
   config->debug_enabled = true;
@@ -391,6 +391,10 @@ bool mm_config_load(mm_config_t *config) {
     return false;
 
   mm_normalize_directory(config->target_directory);
+  if (!mm_ensure_dir_recursive(config->target_directory)) {
+    mm_log_warn("CFG", "failed to create %s: %s", config->target_directory,
+                strerror(errno));
+  }
   mm_log_set_debug_enabled(config->debug_enabled);
   mm_log_info("CFG",
               "loaded config target=%s scan_paths=%zu scan_depth=%u "

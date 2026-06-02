@@ -73,7 +73,7 @@ mkpfs pack file --compress --verify ./GAME1234.exfat ./GAME1234.ffpfsc
 - Config file: `/data/micromount/config.ini`
 - Log file: `/data/micromount/debug.log`
 - Runtime root: `/data/micromount`
-- Default target directory: `/data/homebrew`
+- Default target directory: `/mnt/shadowmnt`
 
 ## 🛠️ Configuration
 
@@ -82,7 +82,7 @@ If `/data/micromount/config.ini` does not exist at runtime, MicroMount automatic
 
 Core keys:
 
-- `target_directory` (default: `/data/homebrew`)
+- `target_directory` (default: `/mnt/shadowmnt`)
 - `scanpath` (repeatable)
 - `scan_paths` (comma/semicolon-separated list)
 - `scan_depth` (default: `1`)
