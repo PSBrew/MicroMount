@@ -12,6 +12,7 @@ ASSET_SRCS := src/icon_asset.c \
 	src/config_ini_example_asset.c
 SRCS := src/main.c \
 	src/mm_config.c \
+	src/mm_assets.c \
 	src/mm_log.c \
 	src/mm_mount.c \
 	src/mm_scan.c \
