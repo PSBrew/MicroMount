@@ -6,10 +6,29 @@
 #include "mm_sha256.h"
 #include "mm_util.h"
 
+static const time_t MM_MIN_CANDIDATE_AGE_SECONDS = 30;
+
 static int mm_compare_candidates(const void *left, const void *right) {
   const mm_image_candidate_t *a = left;
   const mm_image_candidate_t *b = right;
   return strcmp(a->source_path, b->source_path);
+}
+
+static bool mm_candidate_is_old_enough(const struct stat *st) {
+  time_t now;
+  double age_seconds;
+
+  if (!st)
+    return false;
+
+  now = time(NULL);
+  if (now == (time_t)-1) {
+    mm_log_warn("SCAN", "failed to get current time while checking candidate");
+    return false;
+  }
+
+  age_seconds = difftime(now, st->st_mtime);
+  return age_seconds >= (double)MM_MIN_CANDIDATE_AGE_SECONDS;
 }
 
 static bool mm_candidate_list_contains_source(const mm_candidate_list_t *list,
@@ -182,6 +201,10 @@ static bool mm_scan_directory(const mm_config_t *config,
       continue;
     if (!mm_string_ends_with_ignore_case(entry->d_name, ".ffpfsc"))
       continue;
+    if (!mm_candidate_is_old_enough(&st)) {
+      mm_log_debug("SCAN", "skipping recently modified file: %s", full_path);
+      continue;
+    }
     if (mm_candidate_list_contains_source(list, full_path))
       continue;
 
