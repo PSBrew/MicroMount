@@ -91,6 +91,22 @@ bool mm_parse_u16_string(const char *text, uint16_t *out_value) {
   return true;
 }
 
+static bool mm_make_directory_0777(const char *path) {
+  struct stat st;
+
+  if (mkdir(path, 0777) != 0) {
+    if (errno != EEXIST)
+      return false;
+    if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode))
+      return false;
+  }
+
+  if (chmod(path, 0777) != 0)
+    return false;
+
+  return true;
+}
+
 bool mm_path_join(char *out, size_t out_size, const char *left,
                   const char *right) {
   int written;
@@ -160,12 +176,12 @@ bool mm_ensure_dir_recursive(const char *path) {
     if (*cursor != '/')
       continue;
     *cursor = '\0';
-    if (mkdir(temp, 0777) != 0 && errno != EEXIST)
+    if (!mm_make_directory_0777(temp))
       return false;
     *cursor = '/';
   }
 
-  if (mkdir(temp, 0777) != 0 && errno != EEXIST)
+  if (!mm_make_directory_0777(temp))
     return false;
 
   return true;
