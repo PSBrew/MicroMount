@@ -32,10 +32,10 @@ src/%.o: src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 src/icon_asset.c: assets/icon.png
-	xxd -i $< > $@
+	xxd -i -n icon_png $< > $@
 
 src/config_ini_example_asset.c: config.ini.example
-	xxd -i $< > $@
+	xxd -i -n config_ini_example $< > $@
 
 clean:
 	rm -f $(TARGET) src/*.o src/icon_asset.c src/config_ini_example_asset.c
