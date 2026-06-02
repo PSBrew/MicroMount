@@ -15,8 +15,30 @@ static bool g_notification_icon_ready = false;
 #define MM_LOG_FILE_2 MM_LOG_FILE ".2"
 #define MM_LOG_FILE_3 MM_LOG_FILE ".3"
 
-extern unsigned char icon_png[];
-extern unsigned int icon_png_len;
+extern unsigned char icon_png[] __attribute__((weak));
+extern unsigned int icon_png_len __attribute__((weak));
+extern unsigned char assets_icon_png[] __attribute__((weak));
+extern unsigned int assets_icon_png_len __attribute__((weak));
+
+static bool mm_get_notification_icon(const unsigned char **icon_data,
+                                     size_t *icon_size) {
+  if (!icon_data || !icon_size)
+    return false;
+
+  if (icon_png && icon_png_len > 0u) {
+    *icon_data = icon_png;
+    *icon_size = (size_t)icon_png_len;
+    return true;
+  }
+
+  if (assets_icon_png && assets_icon_png_len > 0u) {
+    *icon_data = assets_icon_png;
+    *icon_size = (size_t)assets_icon_png_len;
+    return true;
+  }
+
+  return false;
+}
 
 static FILE *mm_ensure_log_file_open(void) {
   if (g_log_file)
@@ -162,6 +184,8 @@ static void mm_notify_plain_message(const char *message) {
 static bool mm_ensure_notification_icon_present(void) {
   struct stat st;
   FILE *fp;
+  const unsigned char *icon_data;
+  size_t icon_size;
   size_t written;
   int saved_errno = 0;
 
@@ -175,8 +199,14 @@ static bool mm_ensure_notification_icon_present(void) {
   if (!fp)
     return false;
 
-  written = fwrite(icon_png, 1, icon_png_len, fp);
-  if (written != (size_t)icon_png_len)
+  if (!mm_get_notification_icon(&icon_data, &icon_size)) {
+    (void)fclose(fp);
+    errno = ENOENT;
+    return false;
+  }
+
+  written = fwrite(icon_data, 1, icon_size, fp);
+  if (written != icon_size)
     saved_errno = ferror(fp) ? errno : EIO;
   if (fflush(fp) != 0 && saved_errno == 0)
     saved_errno = errno;
