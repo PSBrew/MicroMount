@@ -15,6 +15,7 @@
 >
 > 👉 If you are using **ShadowMountPlus `1.6test15-fix2` or newer**, you no longer need MicroMount:
 > - https://github.com/drakmor/ShadowMountPlus/releases/tag/1.6test15-fix2
+> - Use this tutorial to convert your game backups: https://github.com/drakmor/ShadowMountPlus#compressed-pfs-containers-ffpfsc
 >
 > ❤️ Thank you to everyone who tested, shared feedback, and trusted my work.
 >
