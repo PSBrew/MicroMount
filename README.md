@@ -5,6 +5,28 @@
 [![Platform](https://img.shields.io/badge/platform-PS5-1d4ed8?style=flat-square)](#overview)
 [![GitHub Sponsors](https://img.shields.io/badge/Fund%20Development-GitHub%20Sponsors-e11d48?style=flat-square&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/RenanGBarreto)
 
+----
+
+> [!IMPORTANT]
+> ## 📦 Archive / Deprecation Notice
+> MicroMount has served its purpose as a proof-of-concept payload to validate the new `.ffpfsc` format and gather testing feedback from the community.
+>
+> ✅ In collaboration with the author of [ShadowMountPlus](https://github.com/drakmor/ShadowMountPlus), the relevant features have now been integrated directly into ShadowMountPlus itself.
+>
+> 👉 If you are using **ShadowMountPlus `1.6test15-fix2` or newer**, you no longer need MicroMount:
+> - https://github.com/drakmor/ShadowMountPlus/releases/tag/1.6test15-fix2
+>
+> ❤️ Thank you to everyone who tested, shared feedback, and trusted my work.
+>
+> 🗄️ This repository is now being archived, as MicroMount has fulfilled the goal it was created for.
+>
+> 💖 If you would like to support the work behind MicroMount and MkPFS, please consider sponsoring it here:
+> - https://github.com/sponsors/RenanGBarreto
+>
+> 🔧 [MkPFS](https://github.com/PSBrew/MkPFS) will continue to be actively maintained. I am still fixing bugs there, and new releases are planned soon.
+
+----
+
 MicroMount is a PS5 payload that continuously scans configured folders for `.ffpfsc` images and mounts them automatically into managed mountpoints.
 
 [Overview](#overview) · [Quick Start](#-quick-start) · [How it works](#how-it-works) · [Configuration](#configuration) · [Build](#build) · [Sponsorship](#-sponsorship)
@@ -46,7 +68,7 @@ Or donate directly using:
 
 ```bash
 # Install using pip
-pip install mkpfs
+pip install -U "mkpfs>=0.0.5"
 
 # Convert an .exfat or .ffpkg file into a PFSC compressed image .ffpfsc
 # NOTE: .ffpfsc is the simplest way to have game-file compression support.
